@@ -136,7 +136,9 @@ class ChatServer:
 
     def user_list(self):
         with self.lock:
-            return [info["name"] for info in self.clients.values()]
+            return sorted(
+                info["name"] for info in self.clients.values()
+            )
 
     def broadcast(self, payload, skip=None):
         packet = pack_message(payload)
