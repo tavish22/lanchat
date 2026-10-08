@@ -8,7 +8,7 @@ from protocol import pack_message, read_message
 from ui import banner, message, system
 
 
-def receiver(sock, my_name):
+def receiver(sock, state):
     while True:
         try:
             msg = read_message(sock)
@@ -19,7 +19,11 @@ def receiver(sock, my_name):
             break
 
         if msg.get("type") == "message":
-            message(msg.get("name", "?"), msg.get("text", ""))
+            message(
+                msg.get("name", "?"),
+                msg.get("text", ""),
+                own=msg.get("name") == state["name"],
+            )
         elif msg.get("type") == "system":
             system(msg.get("text", ""))
         elif msg.get("type") == "users":
@@ -50,14 +54,14 @@ def main():
     sock.settimeout(None)
 
     hello = read_message(sock)
-    name = hello.get("name", "guest")
+    state = {"name": hello.get("name", "guest")}
 
-    print(f"you are {name}")
+    print(f"you are {state['name']}")
     print("type /help for commands\n")
 
     threading.Thread(
         target=receiver,
-        args=(sock, name),
+        args=(sock, state),
         daemon=True,
     ).start()
 
@@ -86,7 +90,6 @@ def main():
         if text.startswith("/name "):
             new_name = text[6:].strip()
             if new_name:
-                name = new_name
                 sock.sendall(pack_message({"type": "name", "name": new_name}))
             continue
 
