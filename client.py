@@ -2,6 +2,7 @@ import socket
 import sys
 import threading
 
+from config import CHAT_PORT
 from discovery import find_server
 from protocol import pack_message, read_message
 from ui import banner, message, system
@@ -31,7 +32,7 @@ def main():
     banner()
 
     host = sys.argv[1] if len(sys.argv) > 1 else None
-    port = 42691
+    port = CHAT_PORT
 
     if host:
         print(f"connecting to {host}...")
