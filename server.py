@@ -52,14 +52,14 @@ class ChatServer:
     def handle_client(self, sock, address, user_id):
         name = f"guest{user_id}"
         try:
+            with self.lock:
+                self.clients[sock] = {"name": name, "address": address}
+
             sock.sendall(pack_message({
                 "type": "hello",
                 "name": name,
                 "users": self.user_list(),
             }))
-
-            with self.lock:
-                self.clients[sock] = {"name": name, "address": address}
 
             self.broadcast({
                 "type": "system",
@@ -119,6 +119,16 @@ class ChatServer:
                             "name": name,
                             "text": text[:MAX_MESSAGE],
                         })
+                    continue
+
+                if kind == "me":
+                    text = str(msg.get("text", "")).strip()
+                    if text:
+                        self.broadcast({
+                            "type": "system",
+                            "text": f"* {name} {text[:MAX_MESSAGE]}",
+                        })
+                    continue
 
         except (ConnectionError, OSError, ValueError):
             pass
@@ -136,9 +146,7 @@ class ChatServer:
 
     def user_list(self):
         with self.lock:
-            return sorted(
-                info["name"] for info in self.clients.values()
-            )
+            return sorted(info["name"] for info in self.clients.values())
 
     def broadcast(self, payload, skip=None):
         packet = pack_message(payload)
