@@ -24,3 +24,18 @@ def system(text):
 def message(name, text, own=False):
     color = "\033[92m" if own else "\033[96m"
     print(f"{color}[{stamp()}] {name}: {text}\033[0m")
+
+
+def help_menu():
+    print()
+    print("\033[96mcommands\033[0m")
+    print("  /name <name>  change your name")
+    print("  /who           show online people")
+    print("  /clear         clear the terminal")
+    print("  /help          show this")
+    print("  /quit          leave")
+    print()
+
+
+def connection_info(host, port):
+    system(f"connected to {host}:{port}")
