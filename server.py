@@ -86,6 +86,13 @@ class ChatServer:
                     })
                     continue
 
+                if kind == "users":
+                    sock.sendall(pack_message({
+                        "type": "users",
+                        "users": self.user_list(),
+                    }))
+                    continue
+
                 if kind == "message":
                     text = str(msg.get("text", "")).strip()
                     if text:
