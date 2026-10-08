@@ -1,11 +1,12 @@
 import socket
 
-DISCOVERY_PORT = 42690
+from config import DISCOVERY_PORT, DISCOVERY_TIMEOUT
+
 DISCOVERY_MESSAGE = b"lanchat?\n"
 REPLY_PREFIX = b"lanchat!"
 
 
-def find_server(timeout=1.5):
+def find_server(timeout=DISCOVERY_TIMEOUT):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     sock.settimeout(timeout)
