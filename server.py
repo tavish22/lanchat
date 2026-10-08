@@ -1,11 +1,12 @@
 import socket
 import threading
 
+from config import CHAT_PORT
 from discovery import listen_for_discovery
 from protocol import pack_message, read_message
 
 HOST = "0.0.0.0"
-PORT = 42691
+PORT = CHAT_PORT
 
 
 class ChatServer:
