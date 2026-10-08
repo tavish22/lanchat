@@ -5,7 +5,7 @@ import threading
 from config import CHAT_PORT
 from discovery import find_server
 from protocol import pack_message, read_message
-from ui import banner, message, system
+from ui import banner, clear, connection_info, help_menu, message, system
 
 
 def receiver(sock, state):
@@ -56,6 +56,7 @@ def main():
     hello = read_message(sock)
     state = {"name": hello.get("name", "guest")}
 
+    connection_info(host, port)
     print(f"you are {state['name']}")
     print("type /help for commands\n")
 
@@ -78,9 +79,13 @@ def main():
             break
 
         if text == "/help":
-            print("/name <name>  change your name")
-            print("/who           show online people")
-            print("/quit          leave")
+            help_menu()
+            continue
+
+        if text == "/clear":
+            clear()
+            banner()
+            connection_info(host, port)
             continue
 
         if text == "/who":
