@@ -5,7 +5,7 @@ import threading
 from config import CHAT_PORT
 from discovery import find_server
 from protocol import pack_message, read_message
-from ui import banner, clear, connection_info, help_menu, message, system
+from ui import action, banner, clear, connection_info, help_menu, message, system
 
 
 def receiver(sock, state):
@@ -25,7 +25,11 @@ def receiver(sock, state):
                 own=msg.get("name") == state["name"],
             )
         elif msg.get("type") == "system":
-            system(msg.get("text", ""))
+            text = msg.get("text", "")
+            if text.startswith("* "):
+                action(text[2:])
+            else:
+                system(text)
         elif msg.get("type") == "users":
             system("online: " + ", ".join(msg.get("users", [])))
 
@@ -96,6 +100,15 @@ def main():
             new_name = text[6:].strip()
             if new_name:
                 sock.sendall(pack_message({"type": "name", "name": new_name}))
+            continue
+
+        if text.startswith("/me "):
+            action_text = text[4:].strip()
+            if action_text:
+                sock.sendall(pack_message({
+                    "type": "me",
+                    "text": action_text,
+                }))
             continue
 
         sock.sendall(pack_message({
