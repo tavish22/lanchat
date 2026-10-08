@@ -1,7 +1,7 @@
 import socket
 import threading
 
-from config import CHAT_PORT
+from config import CHAT_PORT, MAX_MESSAGE, MAX_NAME
 from discovery import listen_for_discovery
 from protocol import pack_message, read_message
 
@@ -74,13 +74,30 @@ class ChatServer:
                 kind = msg.get("type")
 
                 if kind == "name":
-                    new_name = str(msg.get("name", "")).strip()[:24]
+                    new_name = str(msg.get("name", "")).strip()[:MAX_NAME]
                     if not new_name:
                         continue
+
+                    with self.lock:
+                        taken = any(
+                            info["name"].lower() == new_name.lower()
+                            and client is not sock
+                            for client, info in self.clients.items()
+                        )
+
+                    if taken:
+                        sock.sendall(pack_message({
+                            "type": "system",
+                            "text": "that name is already taken",
+                        }))
+                        continue
+
                     old_name = name
                     name = new_name
+
                     with self.lock:
                         self.clients[sock]["name"] = name
+
                     self.broadcast({
                         "type": "system",
                         "text": f"{old_name} is now {name}",
@@ -100,7 +117,7 @@ class ChatServer:
                         self.broadcast({
                             "type": "message",
                             "name": name,
-                            "text": text[:2000],
+                            "text": text[:MAX_MESSAGE],
                         })
 
         except (ConnectionError, OSError, ValueError):
